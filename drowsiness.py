@@ -17,7 +17,6 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import cv2
 import keyboard
-from sklearn.pipeline import make_pipeline
 
 # STEP 2: Create an FaceLandmarker object.
 base_options = python.BaseOptions(model_asset_path='face_landmarker_v2_with_blendshapes.task')
@@ -39,9 +38,50 @@ detector = vision.FaceLandmarker.create_from_options(options)
 # cv2_imshow(cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
 
 
+
+
 def dis(d, f):
     distance = ((d.x - f.x) ** 2 + (d.y - f.y) ** 2) ** 0.5
     return distance
+
+
+
+
+df = pd.read_csv('Drowsy.csv')
+x = df.drop("Label", axis=1)
+y = df["Label"]
+x = np.array(x)
+y = np.array(y)
+
+# transformer = Normalizer().transform(x)
+# x = transformer
+# transformer.transform(x)
+
+# scaler = StandardScaler()
+# x = scaler.fit_transform(x)
+# # print(x)
+
+
+# try:
+#   i = 0
+#   while True:
+#     x[i][0] += 1
+#     x[i][1] += 1
+#     x[i][2] += 1
+#     i += 1
+# except:
+#   pass
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=10)
+
+scaler = StandardScaler()
+scaler.fit(x_train)
+
+
+# print(max(x_train))
+
+x_test = scaler.transform(x_test)
+x_train = scaler.transform(x_train)
 
 
 def EAR_pipeline2(image):
@@ -83,52 +123,40 @@ def EAR_pipeline2(image):
     p14r = dis(node_362, node_263)
     left_EAR = (p26l + p35l) / (2 * p14l)
     right_EAR = (p26r + p35r) / (2 * p14r)
-    a = [left_EAR, right_EAR, MAR]
+    a = [[left_EAR, right_EAR, MAR]]
+    a = np.array(a)
     # a = np.array([a])
-    # scaler = StandardScaler()
-    # a = scaler.fit_transform([a])
-    return [a]
+    # # scaler = StandardScaler()
+    # # a = scaler.fit_transform([a])
+    a = scaler.transform(a)
+    return a
 
 
-df = pd.read_csv('Drowsy.csv')
-x = df.drop("Label", axis=1)
-y = df["Label"]
-x = np.array(x)
-y = np.array(y)
-
-# transformer = Normalizer().transform(x)
-# x = transformer
-# transformer.transform(x)
-
-# scaler = StandardScaler()
-# x = scaler.fit_transform(x)
-# # print(x)
 
 
-# try:
-#   i = 0
-#   while True:
-#     x[i][0] += 1
-#     x[i][1] += 1
-#     x[i][2] += 1
-#     i += 1
-# except:
-#   pass
-
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=10)
-
-# print(max(x_train))
-
-# model = KNeighborsClassifier(n_neighbors=9)
-
-model = make_pipeline(StandardScaler(), KNeighborsClassifier(n_neighbors=9))
-model.fit(x_train, y_train)
+model = KNeighborsClassifier(n_neighbors=9)
 
 # model = svm.SVC(kernel = 'rbf')
 
 # model = DTC(random_state=10)
 
-# model.fit(x_train, y_train)
+
+font = cv2.FONT_HERSHEY_SIMPLEX
+
+        # org
+org = (50, 50)
+
+        # fontScale
+fontScale = 1
+
+        # Blue color in BGR
+color = (0, 0, 255)
+
+        # Line thickness of 2 px
+thickness = 2
+
+
+model.fit(x_train, y_train)
 i = 0
 for n in x:
     print(x[i])
@@ -136,9 +164,10 @@ for n in x:
 n = model.predict(x_test)
 a = accuracy_score(y_test, n)
 print(a)
-
+accumulator = 0
+i = 0
 while True:
-    webcam = cv2.VideoCapture(0)
+    webcam = cv2.VideoCapture(1)
     # instead of 0 if we give a video directory it still works
     # 0 is default webcam
     while True:
@@ -146,14 +175,34 @@ while True:
         try:
           prediction = model.predict(EAR_pipeline2(frame))
           if prediction == [0]:
-            text = 'Awake'
+            # text = 'Awake'
+            accumulator -= 1
           elif prediction == [1]:
-            text = 'Drowsy'
+            # text = 'Drowsy'
+            accumulator += 1
         except:
-          text = "No Face Detected"
+            text = "No Face Detected"
+            image = cv2.putText(frame, text, org, font,
+                            fontScale, color, thickness, cv2.LINE_AA)
         # Reading an image in default mode
+        if accumulator == 100:
+            accumulator = 0
+            # text = "Drowsy"
+            i = 1
+        else:
+            text = ""
+        if accumulator == -100:
+            accumulator = 0
+            # text = "Awake"
+            i = -1
+        else:
+            text = ""
+        if i == 1:
+            text = "Drowsy"
+        elif i == -1:
+            text = "Awake"
+        print(accumulator)
         image = cv2.imread
-
         # font
         font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -173,10 +222,12 @@ while True:
         image = cv2.putText(frame, text, org, font,
                             fontScale, color, thickness, cv2.LINE_AA)
         cv2.imshow('Drowsiness Detection', image)
-        key = cv2.waitKey(1)
-        # 1 means that there's 1 millisecond time delay between each frame
-        if keyboard.is_pressed('alt+f4'):
-            break
+      #  key = cv2.waitKey(1) 
+        # # 1 means that there's 1 millisecond time delay between each frame
+        # if keyboard.is_pressed('alt+f4'):
+        #     break
+        if cv2.waitKey(1) and 0xFF == 'q':
+           break
 
     # get face region coordinates
     # faces = face_cascade.detectMultiScale(gray)
