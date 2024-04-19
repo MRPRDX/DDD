@@ -206,44 +206,39 @@ while True:
                 accumulator += 2
             elif prediction_EAR == [0] and prediction_MAR == [1]:
                 accumulator -= 2
+            if accumulator == 100 or accumulator == 101 or accumulator == 102:
+                accumulator = 0
+                # text = "Drowsy"
+                i = 1
+            else:
+                text = ""
+            if accumulator == -100 or accumulator == -101 or accumulator == -102:
+                accumulator = 0
+                # text = "Awake"
+                i = -1
+            else:
+                text = ""
+            if i == 1:
+                text = "Drowsy"
+            elif i == -1:
+                text = "Awake"
         except:
             text = "No Face Detected"
-            image = cv2.putText(frame, text, org, font,
-                                fontScale, color, thickness, cv2.LINE_AA)
+            # image = cv2.putText(frame, text, org, font,
+            #                     fontScale, color, thickness, cv2.LINE_AA)
         # Reading an image in default mode
-        if accumulator == 300 or accumulator == 301 or accumulator == 302:
-            accumulator = 0
-            # text = "Drowsy"
-            i = 1
-        else:
-            text = ""
-        if accumulator == -300 or accumulator == -301 or accumulator == -302:
-            accumulator = 0
-            # text = "Awake"
-            i = -1
-        else:
-            text = ""
-        if i == 1:
-            text = "Drowsy"
-        elif i == -1:
-            text = "Awake"
-        print(accumulator , str(prediction_EAR))
+        print(accumulator)
         image = cv2.imread
         # font
         font = cv2.FONT_HERSHEY_SIMPLEX
-
         # org
         org = (50, 50)
-
         # fontScale
         fontScale = 1
-
         # Blue color in BGR
         color = (0, 0, 255)
-
         # Line thickness of 2 px
         thickness = 2
-
         # Using cv2.putText() method
         image = cv2.putText(frame, text, org, font,
                             fontScale, color, thickness, cv2.LINE_AA)
