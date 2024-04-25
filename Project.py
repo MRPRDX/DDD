@@ -19,7 +19,7 @@ import cv2
 import keyboard
 
 # STEP 2: Create an FaceLandmarker object.
-base_options = python.BaseOptions(model_asset_path='face_landmarker_v2_with_blendshapes.task')
+base_options = python.BaseOptions(model_asset_path='face_landmarker.task')
 options = vision.FaceLandmarkerOptions(base_options=base_options,
                                        output_face_blendshapes=True,
                                        output_facial_transformation_matrixes=True,
@@ -233,6 +233,7 @@ while True:
                 text = "Awake"
             for n in EAR_nodes(frame):
                 cv2.circle(frame, (int(n.x * 640), int(n.y * 480)), 1, (0, 0, 255), -1)
+                print(n)
             for m in MAR_nodes(frame):
                 cv2.circle(frame, (int(m.x*640), int(m.y*480)), 1, (0, 0, 255), -1)
             # for y in range(11):
