@@ -92,8 +92,7 @@ scaler_MAR.fit(x_train_MAR)
 x_test_MAR = scaler_MAR.transform(x_test_MAR)
 x_train_MAR = scaler_MAR.transform(x_train_MAR)
 
-
-def EAR(image):
+def EAR_nodes(image):
     img = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
     detection_result = detector.detect(img)
     # EAR Nodes
@@ -109,12 +108,16 @@ def EAR(image):
     node_263 = detection_result.face_landmarks[0][263]
     node_373 = detection_result.face_landmarks[0][373]
     node_387 = detection_result.face_landmarks[0][387]
-    p26l = dis(node_144, node_160, x_EAR, y_EAR)
-    p35l = dis(node_158, node_153, x_EAR, y_EAR)
-    p14l = dis(node_33, node_133, x_EAR, y_EAR)
-    p26r = dis(node_385, node_380, x_EAR, y_EAR)
-    p35r = dis(node_373, node_387, x_EAR, y_EAR)
-    p14r = dis(node_362, node_263, x_EAR, y_EAR)
+    list_1 = [node_144, node_160, node_158, node_153, node_33, node_133, node_385, node_380, node_373, node_387, node_362, node_263]
+    return list_1
+def EAR(image):
+    node = EAR_nodes(image)
+    p26l = dis(node[0], node[1], x_EAR, y_EAR)
+    p35l = dis(node[2], node[3], x_EAR, y_EAR)
+    p14l = dis(node[4], node[5], x_EAR, y_EAR)
+    p26r = dis(node[6], node[7], x_EAR, y_EAR)
+    p35r = dis(node[8], node[9], x_EAR, y_EAR)
+    p14r = dis(node[10], node[11], x_EAR, y_EAR)
     left_EAR = (p26l + p35l) / (2 * p14l)
     right_EAR = (p26r + p35r) / (2 * p14r)
     a = [[left_EAR, right_EAR]]
@@ -125,8 +128,7 @@ def EAR(image):
     a = scaler_EAR.transform(a)
     return a
 
-
-def MAR(image):
+def MAR_nodes(image):
     img = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
     detection_result = detector.detect(img)
     # MAR Nodes
@@ -138,10 +140,15 @@ def MAR(image):
     node_11 = detection_result.face_landmarks[0][11]
     node_73 = detection_result.face_landmarks[0][73]
     node_180 = detection_result.face_landmarks[0][180]
-    p73180 = dis(node_73, node_180, x_MAR, y_MAR)
-    p78308 = dis(node_78, node_308, x_MAR, y_MAR)
-    p1116 = dis(node_11, node_16, x_MAR, y_MAR)
-    p303404 = dis(node_303, node_404, x_MAR, y_MAR)
+    list_2 = [node_73, node_180, node_78, node_308, node_11, node_16, node_303, node_404]
+    return list_2
+
+def MAR(image):
+    node_1 = MAR_nodes(image)
+    p73180 = dis(node_1[0], node_1[1], x_MAR, y_MAR)
+    p78308 = dis(node_1[2], node_1[3], x_MAR, y_MAR)
+    p1116 = dis(node_1[4], node_1[5], x_MAR, y_MAR)
+    p303404 = dis(node_1[6], node_1[7], x_MAR, y_MAR)
     MAR = (p73180 + p1116 + p303404) / (2 * p78308)
     b = [[MAR]]
     b = np.array(b)
@@ -189,6 +196,8 @@ thickness = 2
 
 while True:
     webcam = cv2.VideoCapture(0)
+    # webcam.set(3, 1920)
+    # webcam.set(4, 1080)
     # instead of 0 if we give a video directory it still works
     # 0 is default webcam
     while True:
@@ -206,13 +215,13 @@ while True:
                 accumulator += 2
             elif prediction_EAR == [0] and prediction_MAR == [1]:
                 accumulator -= 2
-            if accumulator == 100 or accumulator == 101 or accumulator == 102:
+            if accumulator >= 60:
                 accumulator = 0
                 # text = "Drowsy"
                 i = 1
             else:
                 text = ""
-            if accumulator == -100 or accumulator == -101 or accumulator == -102:
+            if accumulator <= -50:
                 accumulator = 0
                 # text = "Awake"
                 i = -1
@@ -222,12 +231,18 @@ while True:
                 text = "Drowsy"
             elif i == -1:
                 text = "Awake"
+            for n in EAR_nodes(frame):
+                cv2.circle(frame, (int(n.x * 640), int(n.y * 480)), 1, (0, 0, 255), -1)
+            for m in MAR_nodes(frame):
+                cv2.circle(frame, (int(m.x*640), int(m.y*480)), 1, (0, 0, 255), -1)
+            # for y in range(11):
+            #     cv2.circle(frame, MAR_nodes(frame)[y], 1,(0,0,255))
         except:
             text = "No Face Detected"
             # image = cv2.putText(frame, text, org, font,
             #                     fontScale, color, thickness, cv2.LINE_AA)
         # Reading an image in default mode
-        print(accumulator)
+        # print(accumulator)
         image = cv2.imread
         # font
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -240,6 +255,7 @@ while True:
         # Line thickness of 2 px
         thickness = 2
         # Using cv2.putText() method
+        print(accumulator)
         image = cv2.putText(frame, text, org, font,
                             fontScale, color, thickness, cv2.LINE_AA)
         cv2.imshow('Drowsiness Detection', image)
@@ -247,7 +263,7 @@ while True:
         # # 1 means that there's 1 millisecond time delay between each frame
         # if keyboard.is_pressed('alt+f4'):
         #     break
-        if cv2.waitKey(1) and 0xFF == 'q':
+        if cv2.waitKey(1) and 0xFF == ord('q'):
             break
 
     # get face region coordinates
