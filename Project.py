@@ -17,7 +17,8 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import cv2
 import keyboard
-
+import pyttsx3
+engine = pyttsx3.init()
 # STEP 2: Create an FaceLandmarker object.
 base_options = python.BaseOptions(model_asset_path='face_landmarker.task')
 options = vision.FaceLandmarkerOptions(base_options=base_options,
@@ -194,26 +195,53 @@ color = (0, 0, 255)
 # Line thickness of 2 px
 thickness = 2
 
+def Color(a, b):
+    for n in EAR_nodes(frame):
+        cv2.circle(frame_copy, (int(n.x * 800), int(n.y * 800)), 1, a, -1)
+    for m in MAR_nodes(frame):
+        cv2.circle(frame_copy, (int(m.x * 800), int(m.y * 800)), 1, b, -1)   
+
 while True:
     webcam = cv2.VideoCapture(0)
-    # webcam.set(3, 1920)
-    # webcam.set(4, 1080)
+    webcam.set(3, 600)
+    webcam.set(4, 800)
     # instead of 0 if we give a video directory it still works
     # 0 is default webcam
     while True:
         successful_frame_read, frame = webcam.read()
+        frame_copy = frame.copy()
         try:
             prediction_EAR = model_EAR.predict(EAR(frame))
             prediction_MAR = model_MAR.predict(MAR(frame))
             if prediction_EAR == [0] and prediction_MAR == [0]:
+                # for n in EAR_nodes(frame):
+                #     cv2.circle(frame_copy, (int(n.x * 640), int(n.y * 480)), 1, (0, 255, 0), -1)
+                # for m in MAR_nodes(frame):
+                #     cv2.circle(frame_copy, (int(m.x*640), int(m.y*480)), 1, (0, 255, 0), -1)   
                 # text = 'Awake'
+                Color((0, 255, 0), (0, 255, 0))
                 accumulator -= 3
             elif prediction_EAR == [1] and prediction_MAR == [1]:
+                # for n in EAR_nodes(frame):
+                #     cv2.circle(frame_copy, (int(n.x * 640), int(n.y * 480)), 1, (0, 0, 255), -1)
+                # for m in MAR_nodes(frame):
+                #     cv2.circle(frame_copy, (int(m.x*640), int(m.y*480)), 1, (0, 0, 255), -1)   
                 # text = 'Drowsy'
+                Color((0, 0, 255), (0, 0, 255))
                 accumulator += 3
             elif prediction_EAR == [1] and prediction_MAR == [0]:
+                # for n in EAR_nodes(frame):
+                #     cv2.circle(frame_copy, (int(n.x * 640), int(n.y * 480)), 1, (0, 0, 255), -1)
+                # for m in MAR_nodes(frame):
+                #     cv2.circle(frame_copy, (int(m.x*640), int(m.y*480)), 1, (0, 255, 0), -1)
+                Color((0, 0, 255), (0, 255, 0))   
                 accumulator += 2
             elif prediction_EAR == [0] and prediction_MAR == [1]:
+                # for n in EAR_nodes(frame):
+                #     cv2.circle(frame_copy, (int(n.x * 640), int(n.y * 480)), 1, (0, 255, 0), -1)
+                # for m in MAR_nodes(frame):
+                #     cv2.circle(frame_copy, (int(m.x*640), int(m.y*480)), 1, (0, 0, 255), -1)   
+                Color((0, 255, 0), (0, 0, 255))
                 accumulator -= 2
             if accumulator >= 60:
                 accumulator = 0
@@ -225,21 +253,22 @@ while True:
                 accumulator = 0
                 # text = "Awake"
                 i = -1
+                
             else:
                 text = ""
             if i == 1:
                 text = "Drowsy"
+
             elif i == -1:
                 text = "Awake"
-            for n in EAR_nodes(frame):
-                cv2.circle(frame, (int(n.x * 640), int(n.y * 480)), 1, (0, 0, 255), -1)
-                print(n)
-            for m in MAR_nodes(frame):
-                cv2.circle(frame, (int(m.x*640), int(m.y*480)), 1, (0, 0, 255), -1)
+            
+            
+                
+            
             # for y in range(11):
             #     cv2.circle(frame, MAR_nodes(frame)[y], 1,(0,0,255))
         except:
-            text = "No Face Detected"
+            text = "Attention!"
             # image = cv2.putText(frame, text, org, font,
             #                     fontScale, color, thickness, cv2.LINE_AA)
         # Reading an image in default mode
@@ -257,7 +286,7 @@ while True:
         thickness = 2
         # Using cv2.putText() method
         print(accumulator)
-        image = cv2.putText(frame, text, org, font,
+        image = cv2.putText(frame_copy, text, org, font,
                             fontScale, color, thickness, cv2.LINE_AA)
         cv2.imshow('Drowsiness Detection', image)
         #  key = cv2.waitKey(1)
