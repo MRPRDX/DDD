@@ -17,8 +17,6 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import cv2
 import keyboard
-import pyttsx3
-engine = pyttsx3.init()
 # STEP 2: Create an FaceLandmarker object.
 base_options = python.BaseOptions(model_asset_path='face_landmarker.task')
 options = vision.FaceLandmarkerOptions(base_options=base_options,
@@ -197,14 +195,14 @@ thickness = 2
 
 def Color(a, b):
     for n in EAR_nodes(frame):
-        cv2.circle(frame_copy, (int(n.x * 800), int(n.y * 800)), 1, a, -1)
+        cv2.circle(frame_copy, (int(n.x * 1280), int(n.y * 720)), 1, a, -1)
     for m in MAR_nodes(frame):
-        cv2.circle(frame_copy, (int(m.x * 800), int(m.y * 800)), 1, b, -1)   
+        cv2.circle(frame_copy, (int(m.x * 1280), int(m.y * 720)), 1, b, -1)
 
 while True:
     webcam = cv2.VideoCapture(0)
-    webcam.set(3, 600)
-    webcam.set(4, 800)
+    webcam.set(3, 1280)
+    webcam.set(4, 720)
     # instead of 0 if we give a video directory it still works
     # 0 is default webcam
     while True:
