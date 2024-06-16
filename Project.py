@@ -1,4 +1,6 @@
 # STEP 1: Import the necessary modules.
+import time
+
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
@@ -17,6 +19,10 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import cv2
 import keyboard
+from audioplayer import AudioPlayer
+from threading import Thread
+import time
+
 # STEP 2: Create an FaceLandmarker object.
 base_options = python.BaseOptions(model_asset_path='face_landmarker.task')
 options = vision.FaceLandmarkerOptions(base_options=base_options,
@@ -91,6 +97,7 @@ scaler_MAR.fit(x_train_MAR)
 x_test_MAR = scaler_MAR.transform(x_test_MAR)
 x_train_MAR = scaler_MAR.transform(x_train_MAR)
 
+
 def EAR_nodes(image):
     img = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
     detection_result = detector.detect(img)
@@ -107,8 +114,11 @@ def EAR_nodes(image):
     node_263 = detection_result.face_landmarks[0][263]
     node_373 = detection_result.face_landmarks[0][373]
     node_387 = detection_result.face_landmarks[0][387]
-    list_1 = [node_144, node_160, node_158, node_153, node_33, node_133, node_385, node_380, node_373, node_387, node_362, node_263]
+    list_1 = [node_144, node_160, node_158, node_153, node_33, node_133, node_385, node_380, node_373, node_387,
+              node_362, node_263]
     return list_1
+
+
 def EAR(image):
     node = EAR_nodes(image)
     p26l = dis(node[0], node[1], x_EAR, y_EAR)
@@ -127,6 +137,7 @@ def EAR(image):
     a = scaler_EAR.transform(a)
     return a
 
+
 def MAR_nodes(image):
     img = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
     detection_result = detector.detect(img)
@@ -141,6 +152,7 @@ def MAR_nodes(image):
     node_180 = detection_result.face_landmarks[0][180]
     list_2 = [node_73, node_180, node_78, node_308, node_11, node_16, node_303, node_404]
     return list_2
+
 
 def MAR(image):
     node_1 = MAR_nodes(image)
@@ -193,12 +205,18 @@ color = (0, 0, 255)
 # Line thickness of 2 px
 thickness = 2
 
+
 def Color(a, b):
     for n in EAR_nodes(frame):
         cv2.circle(frame_copy, (int(n.x * 1280), int(n.y * 720)), 1, a, -1)
     for m in MAR_nodes(frame):
         cv2.circle(frame_copy, (int(m.x * 1280), int(m.y * 720)), 1, b, -1)
 
+
+def Alert():
+    AudioPlayer("Windows Message Nudge.wav").play(block=True)
+
+r = 0
 while True:
     webcam = cv2.VideoCapture(0)
     webcam.set(3, 1280)
@@ -206,6 +224,13 @@ while True:
     # instead of 0 if we give a video directory it still works
     # 0 is default webcam
     while True:
+        r += 1
+        if i == 1 and r % 40 == 0:
+            t1 = Thread(target=Alert)
+            t1.start()
+            r = 0
+        elif i == -1:
+            r = 0
         successful_frame_read, frame = webcam.read()
         frame_copy = frame.copy()
         try:
@@ -215,7 +240,7 @@ while True:
                 # for n in EAR_nodes(frame):
                 #     cv2.circle(frame_copy, (int(n.x * 640), int(n.y * 480)), 1, (0, 255, 0), -1)
                 # for m in MAR_nodes(frame):
-                #     cv2.circle(frame_copy, (int(m.x*640), int(m.y*480)), 1, (0, 255, 0), -1)   
+                #     cv2.circle(frame_copy, (int(m.x*640), int(m.y*480)), 1, (0, 255, 0), -1)
                 # text = 'Awake'
                 Color((0, 255, 0), (0, 255, 0))
                 accumulator -= 3
@@ -223,7 +248,7 @@ while True:
                 # for n in EAR_nodes(frame):
                 #     cv2.circle(frame_copy, (int(n.x * 640), int(n.y * 480)), 1, (0, 0, 255), -1)
                 # for m in MAR_nodes(frame):
-                #     cv2.circle(frame_copy, (int(m.x*640), int(m.y*480)), 1, (0, 0, 255), -1)   
+                #     cv2.circle(frame_copy, (int(m.x*640), int(m.y*480)), 1, (0, 0, 255), -1)
                 # text = 'Drowsy'
                 Color((0, 0, 255), (0, 0, 255))
                 accumulator += 3
@@ -232,13 +257,13 @@ while True:
                 #     cv2.circle(frame_copy, (int(n.x * 640), int(n.y * 480)), 1, (0, 0, 255), -1)
                 # for m in MAR_nodes(frame):
                 #     cv2.circle(frame_copy, (int(m.x*640), int(m.y*480)), 1, (0, 255, 0), -1)
-                Color((0, 0, 255), (0, 255, 0))   
+                Color((0, 0, 255), (0, 255, 0))
                 accumulator += 2
             elif prediction_EAR == [0] and prediction_MAR == [1]:
                 # for n in EAR_nodes(frame):
                 #     cv2.circle(frame_copy, (int(n.x * 640), int(n.y * 480)), 1, (0, 255, 0), -1)
                 # for m in MAR_nodes(frame):
-                #     cv2.circle(frame_copy, (int(m.x*640), int(m.y*480)), 1, (0, 0, 255), -1)   
+                #     cv2.circle(frame_copy, (int(m.x*640), int(m.y*480)), 1, (0, 0, 255), -1)
                 Color((0, 255, 0), (0, 0, 255))
                 accumulator -= 2
             if accumulator >= 60:
@@ -251,18 +276,12 @@ while True:
                 accumulator = 0
                 # text = "Awake"
                 i = -1
-                
             else:
                 text = ""
             if i == 1:
                 text = "Drowsy"
-
             elif i == -1:
                 text = "Awake"
-            
-            
-                
-            
             # for y in range(11):
             #     cv2.circle(frame, MAR_nodes(frame)[y], 1,(0,0,255))
         except:
@@ -283,7 +302,7 @@ while True:
         # Line thickness of 2 px
         thickness = 2
         # Using cv2.putText() method
-        print(accumulator)
+        print(r)
         image = cv2.putText(frame_copy, text, org, font,
                             fontScale, color, thickness, cv2.LINE_AA)
         cv2.imshow('Drowsiness Detection', image)
@@ -294,6 +313,6 @@ while True:
         if cv2.waitKey(1) and 0xFF == ord('q'):
             break
 
-    # get face region coordinates
-    # faces = face_cascade.detectMultiScale(gray)
-    # get face bounding box for overlay
+# get face region coordinates
+# faces = face_cascade.detectMultiScale(gray)
+# get face bounding box for overlay
