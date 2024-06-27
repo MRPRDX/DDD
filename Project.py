@@ -214,7 +214,7 @@ def Color(a, b):
 
 
 def Alert():
-    AudioPlayer("Windows Message Nudge.wav").play(block=True)
+    AudioPlayer("Screen_Recording_20240426_164913_YouTube.mp3").play(block=True)
 
 r = 0
 while True:
@@ -286,6 +286,7 @@ while True:
             #     cv2.circle(frame, MAR_nodes(frame)[y], 1,(0,0,255))
         except:
             text = "Attention!"
+            r = 0
             # image = cv2.putText(frame, text, org, font,
             #                     fontScale, color, thickness, cv2.LINE_AA)
         # Reading an image in default mode
