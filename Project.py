@@ -1,6 +1,7 @@
 # STEP 1: Import the necessary modules.
 import time
 
+import joblib
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
@@ -169,25 +170,26 @@ def MAR(image):
     b = scaler_MAR.transform(b)
     return b
 
-
-model_EAR = KNeighborsClassifier(n_neighbors=3)
+model_EAR = joblib.load("EAR_Model.pkl")
+model_MAR = joblib.load("MAR_Model.pkl")
+# model_EAR = KNeighborsClassifier(n_neighbors=3)
 
 # model = svm.SVC(kernel = 'rbf')
 
 # model = DTC(random_state=10)
 
-model_EAR.fit(x_train_EAR, y_train_EAR)
+# model_EAR.fit(x_train_EAR, y_train_EAR)
 
-model_MAR = KNeighborsClassifier(n_neighbors=9)
+# model_MAR = KNeighborsClassifier(n_neighbors=9)
 
-model_MAR.fit(x_train_MAR, y_train_MAR)
-i = 0
-for n in x_EAR:
-    print(x_EAR[i])
-    i += 1
-n = model_MAR.predict(x_test_MAR)
-a = accuracy_score(y_test_MAR, n)
-print(a)
+# model_MAR.fit(x_train_MAR, y_train_MAR)
+# i = 0
+# for n in x_EAR:
+#     print(x_EAR[i])
+#     i += 1
+# n = model_MAR.predict(x_test_MAR)
+# a = accuracy_score(y_test_MAR, n)
+# print(a)
 accumulator = 0
 i = 0
 
