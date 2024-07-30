@@ -4,23 +4,34 @@ import matplotlib.pyplot as plt
 
 
 lis = [0, 0, 0, 0, 0]
+
+def lispercent():
+    r = 0
+    percent = []
+    for i in lis:
+        r += i
+    for j in lis:
+       percent.append(int(j/r*100))
+    return percent
 def Chart(Val):
     if plt.fignum_exists(1):
         plt.close()
-        fig, ax = plt.subplots()
         number = lis
         lis[rb.get() - 1] += 1
-        label = ["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"]
-        ax.bar(label, number)
-        plt.yticks(number)
+        label = ["1 Star " + str(lispercent()[0])+"%", "2 Stars " + str(lispercent()[1])+"%",
+                 "3 Stars " + str(lispercent()[2])+"%", "4 Stars " + str(lispercent()[3])+"%",
+                 "5 Stars " + str(lispercent()[4])+"%"]
+        plt.pie(number)
+        plt.legend(labels=label)
         plt.show()
     else:
-        fig, ax = plt.subplots()
         lis[rb.get() - 1] += 1
-        label = ["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"]
+        label = ["1 Star "+str(lispercent()[0])+"%", "2 Stars "+str(lispercent()[1])+"%",
+                 "3 Stars "+str(lispercent()[2])+"%", "4 Stars "+str(lispercent()[3])+"%",
+                 "5 Stars "+str(lispercent()[4])+"%"]
         number = lis
-        ax.bar(label, number)
-        plt.yticks(number)
+        plt.pie(number)
+        plt.legend(labels=label)
         plt.show()
 
 
