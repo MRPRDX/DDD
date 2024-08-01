@@ -38,23 +38,24 @@ def Chart(Val):
 tk = tkinter.Tk()
 tk.geometry("500x500")
 txt = "پروژه چقدر براتون جالب بود؟"
-text = Label(tk, text=txt)
+text = Label(tk, text=txt, font="bnazanin 25")
 text.pack()
 rb = IntVar()
 
-rb1 = Radiobutton(tk, text="1 کمترین", variable=rb, value=1)
-rb2 = Radiobutton(tk, text="2", variable=rb, value=2)
-rb3 = Radiobutton(tk, text="3", variable=rb, value=3)
-rb4 = Radiobutton(tk, text="4", variable=rb, value=4)
-rb5 = Radiobutton(tk, text="5 بیشترین", variable=rb, value=5)
+rb1 = Radiobutton(tk, text="1 کمترین", variable=rb, value=1, font="bnazanin 25")
+rb2 = Radiobutton(tk, text="2", variable=rb, value=2, font="bnazanin 25")
+rb3 = Radiobutton(tk, text="3", variable=rb, value=3, font="bnazanin 25")
+rb4 = Radiobutton(tk, text="4", variable=rb, value=4, font="bnazanin 25")
+rb5 = Radiobutton(tk, text="5 بیشترین", variable=rb, value=5, font="bnazanin 25")
 rb1.pack()
 rb2.pack()
 rb3.pack()
 rb4.pack()
 rb5.pack()
-button = Button(tk, text='ثبت', command=lambda: Chart(rb))
-
+button = Button(tk, text='ثبت', command=lambda: Chart(rb), font="bnazanin 25")
+text2 = Label(tk, text="هوش مصنوعی گروه تشخیص خواب آلودگی", font="bnazanin 15")
 button.pack()
+text2.pack()
 tk.mainloop()
 
 
